@@ -1,103 +1,156 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+interface Movie {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string;
 }
+
+export default function TmdbApiTestPage() {
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [query, setQuery] = useState('');
+
+    const fetchMovies = async (search?: string) => {
+        try {
+        const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+        const endpoint = search
+            ? `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=ko-KR&query=${encodeURIComponent(search)}`
+            : `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ko-KR`;
+        const res = await fetch(endpoint);
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`status ${res.status}: ${errorText}`);
+        }
+        const data = await res.json();
+        setMovies(data.results);
+        } catch (err: any) {
+        setError(err.message);
+        } finally {
+        setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMovies();
+    }, []);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        fetchMovies(query);
+    };
+
+    return (
+        <Container>
+            <h1>TMDB 인기 영화 테스트</h1>
+            <form onSubmit={handleSearch}>
+                <SearchInput
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="영화 제목을 검색하세요"
+                />
+                <SearchButton type="submit">검색</SearchButton>
+            </form>
+            {loading && <p>로딩 중...</p>}
+            {error && <ErrorText>에러 발생: {error}</ErrorText>}
+            <MovieGrid>
+                {movies.map(movie => (
+                <MovieCard key={movie.id}>
+                    <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} />
+                    <div />
+                    <h2>{movie.title}</h2>
+                    {/* <p>{movie.overview}</p> */}
+                </MovieCard>
+                ))}
+            </MovieGrid>
+        </Container>
+    );
+}
+
+const Container = styled.div`
+    padding: 2rem;
+    color: white;
+`;
+
+const ErrorText = styled.p`
+    color: red;
+`;
+
+const SearchInput = styled.input`
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    margin-right: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+`;
+
+const SearchButton = styled.button`
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #1db954;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+        background-color: #1ed760;
+    }
+`;
+
+const MovieGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+`;
+
+const MovieCard = styled.div`
+    position: relative;
+    background: #f9f9f9;
+    border-radius: 10px;
+    text-align: center;
+    height: 232px;
+    overflow: hidden;
+    cursor: pointer;
+    img {
+        border-radius: 8px;
+        width: 100%;
+        object-fit: cover;
+    }
+    h2 {
+        font-size: 1.4rem;
+        margin: 0.5rem 0;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+    }
+    p {
+        font-size: 0.875rem;
+        color: #555;
+    }
+    div {
+        display: none;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0%;
+        top: 0%;
+        background-color: black;
+        opacity: 0.4;
+    }
+
+    &:hover {
+        div, h2 {
+            display: block;
+        }
+    }
+`;
