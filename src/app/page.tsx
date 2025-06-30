@@ -100,9 +100,9 @@ export default function TmdbApiTestPage() {
             {
                 movieView && (
                     <MovieBox
-                        title={movieTitle}
-                        poster={movieImage}
-                        overview={movieOverview}
+                        title={movieTitle ? movieTitle : ''}
+                        poster={movieImage ? movieImage : ''}
+                        overview={movieOverview ? movieOverview : ''}
                     />
                 )
             }

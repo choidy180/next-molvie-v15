@@ -1,24 +1,53 @@
 import Image from "next/image"
+import { GoPlus } from "react-icons/go";
 import styled from "styled-components"
+import { useAuthStore } from "../../../store/useAuthStore";
+import { useState } from "react";
 
 interface ContentType {
     title: string | null;
     poster: string | null;
-    overview: string | null;
+    overview: string;
 }
 
 const MovieBox = ({title, poster, overview}:ContentType) => {
+
+    // 노출 여부 핸들러
+    const setMovieView = useAuthStore((movieState) => movieState.setView);
+
+    // 이미지 로딩 여부
+    const [loaded, setLoaded] = useState(false);
+
+    const ViewHandler = () => {
+        setLoaded(true); // 로드 취소
+        setMovieView(false); // 노출 취소
+    }
     return (
-        <Container onClick={()=> console.log(title)}>
+        <Container>
             <div className="blackBox"/>
-            <ContentBox>
-                <Image
-                    src={`https://image.tmdb.org/t/p/w200${poster}`}
-                    width={400}
-                    height={600}
-                    alt={overview ? overview?.slice(0, 30) : ''}
-                />
-            </ContentBox>
+            {
+                loaded === false && (
+                    <ContentBox>
+                        <Image
+                            src={`https://image.tmdb.org/t/p/w200${poster}`}
+                            width={400}
+                            height={600}
+                            alt={overview ? overview?.slice(0, 30) : ''}
+                            onLoadStart={()=> setLoaded(true)}
+                            onLoad={() => setLoaded(false)}
+                        />
+
+                        <div className="textBox">
+                            <div>
+                                <GoPlus onClick={ViewHandler}/>
+                            </div>
+                            <h1>{title}</h1>
+                            <p>{overview?.length > 400 ? overview?.slice(0, 300) + '...' : overview}</p>
+                            <button onClick={() => window.open(`https://www.youtube.com/results?search_query=${title}`)}>SEARCH</button>
+                        </div>
+                    </ContentBox>
+                )
+            }
         </Container>
     )
 }
@@ -43,13 +72,14 @@ const Container = styled.div`
 
 const ContentBox = styled.div`
     position: absolute;
-    width: 1000px;
+    width: auto;
     padding: 1rem;
     background-color: #141414;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 14px;
+    gap: 2rem;
 
     display: flex;
     justify-content: center;
@@ -58,7 +88,52 @@ const ContentBox = styled.div`
     img {
         object-fit: cover;
         border-radius: 14px;
-        gap: 2rem;
+    }
+
+    .textBox {
+        width: calc(400px - 4rem);
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        align-items: start;
+        color: #FFFFFF;
+
+        div {
+            width: 100%;
+            display: flex;
+            justify-content: end;
+            align-items: center;
+
+            svg {
+                width: 2.4rem;
+                height: 2.4rem;
+                rotate: 45deg;
+                cursor: pointer;
+                transform: translateY(-10px);
+            }
+        }
+
+        p {
+            font-size: 1rem;
+            line-height: 1.4rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 2rem;
+            padding: 0.6rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            outline: none;
+            border: none;
+            border-radius: 8px;
+            color: #FFFFFF;
+            background-color: #1ed760;
+            cursor: pointer;
+        }
     }
 `
 
