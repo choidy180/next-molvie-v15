@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useAuthStore } from '../../store/useAuthStore';
+import MovieBox from './components/movieBox';
 
 interface Movie {
   id: number;
@@ -16,23 +18,41 @@ export default function TmdbApiTestPage() {
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
 
+    // 전역 변수
+    
+    // 타이틀
+    const movieTitle = useAuthStore((movieState) => movieState.title);
+    const setMovieTitle = useAuthStore((movieState) => movieState.setTitle);
+
+    // 이미지
+    const movieImage = useAuthStore((movieState) => movieState.image);
+    const setMovieImage = useAuthStore((movieState) => movieState.setImage);
+
+    // 설명
+    const movieOverview = useAuthStore((movieState) => movieState.overview);
+    const setMovieOverview = useAuthStore((movieState) => movieState.setOverview);
+
+    // 노출
+    const movieView = useAuthStore((movieState) => movieState.view);
+    const setMovieView = useAuthStore((movieState) => movieState.setView);
+
     const fetchMovies = async (search?: string) => {
         try {
-        const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-        const endpoint = search
-            ? `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=ko-KR&query=${encodeURIComponent(search)}`
-            : `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ko-KR`;
-        const res = await fetch(endpoint);
-        if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`status ${res.status}: ${errorText}`);
-        }
-        const data = await res.json();
-        setMovies(data.results);
+            const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+            const endpoint = search
+                ? `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=ko-KR&query=${encodeURIComponent(search)}`
+                : `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ko-KR`;
+            const res = await fetch(endpoint);
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`status ${res.status}: ${errorText}`);
+            }
+            const data = await res.json();
+            setMovies(data.results);
         } catch (err: any) {
-        setError(err.message);
+            setError(err.message);
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -46,15 +66,23 @@ export default function TmdbApiTestPage() {
         fetchMovies(query);
     };
 
+    const movieViewHandler = (title:string, poster:string, overview:string) => {
+        setMovieTitle(title);
+        setMovieImage(poster);
+        setMovieOverview(overview);
+
+        setMovieView(true);
+    }
+
     return (
         <Container>
             <h1>TMDB 인기 영화 테스트</h1>
             <form onSubmit={handleSearch}>
                 <SearchInput
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="영화 제목을 검색하세요"
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="영화 제목을 검색하세요"
                 />
                 <SearchButton type="submit">검색</SearchButton>
             </form>
@@ -62,14 +90,22 @@ export default function TmdbApiTestPage() {
             {error && <ErrorText>에러 발생: {error}</ErrorText>}
             <MovieGrid>
                 {movies.map(movie => (
-                <MovieCard key={movie.id}>
-                    <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} />
-                    <div />
-                    <h2>{movie.title}</h2>
-                    {/* <p>{movie.overview}</p> */}
-                </MovieCard>
+                    <MovieCard key={movie.id} onClick={() => movieViewHandler(movie.title, movie.poster_path, movie.overview)}>
+                        <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} />
+                        <div />
+                        <h2>{movie.title}</h2>
+                    </MovieCard>
                 ))}
             </MovieGrid>
+            {
+                movieView && (
+                    <MovieBox
+                        title={movieTitle}
+                        poster={movieImage}
+                        overview={movieOverview}
+                    />
+                )
+            }
         </Container>
     );
 }
