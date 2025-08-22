@@ -1,6 +1,6 @@
 <!-- BANNER -->
 <p align="center">
-  <img src="./public/next-movie.png" alt="spo-next Banner" width="200px" />
+  <img src="./public/next-movie.png" alt="next-movie Banner" width="200px" />
 </p> 
 
 
