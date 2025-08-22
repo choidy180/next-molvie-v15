@@ -7,7 +7,7 @@
 
 <h1 align="center">⚡Next-Movie 박스오피스 순위</h1>
 <p align="center">
-  <b>Next.js + TypeScript 기반의 인터렉티브 박스오피스 순위 페이</b>
+  <b>Next.js + TypeScript 기반의 인터렉티브 박스오피스 순위 페이지</b>
 </p>
 
 <p align="center">
