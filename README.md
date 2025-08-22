@@ -5,9 +5,9 @@
 
 
 
-<h1 align="center">⚡Next-Movie 박스오피스 순위</h1>
+<h1 align="center">⚡Next-Movie TMDB 박스오피스 순위</h1>
 <p align="center">
-  <b>Next.js + TypeScript 기반의 인터렉티브 박스오피스 순위 페이지</b>
+  <b>Next.js + TypeScript 기반의 인터렉티브 TMDB 박스오피스 순위 페이지</b>
 </p>
 
 <p align="center">
@@ -52,8 +52,8 @@
 
 ##  프로젝트 요약
 #### 1. NextJS + 스타일컴포넌트 사용
-#### 2. 스포티파이 API 사용하여, 기존 등록한 플레이리스트 불러오기
-#### 3. 음악재생시 관련 MV & VIDEO 배경으로 전환표시
+#### 2. TMDB API 사용하여, 박스오피스 순위 가져오기
+#### 3. 영화박스 클릭하여, 포스터 및 추가 영화정보(등장인물, 평점 등) 표시
 
 
 ##  Install
